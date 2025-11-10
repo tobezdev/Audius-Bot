@@ -9,3 +9,7 @@ pyvenv.cfg
 
 # Other Hidden Files
 *.hidden.*
+
+# Cache files
+__pycache__/
+*.py[cod]
