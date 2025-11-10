@@ -4,3 +4,8 @@ Lib/
 Scripts/
 pyvenv.cfg
 
+# Environment Variables
+*.env*
+
+# Other Hidden Files
+*.hidden.*
