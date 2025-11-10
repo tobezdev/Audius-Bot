@@ -158,6 +158,7 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
 
 
 if __name__ == "__main__":
+    dotenv.load_dotenv()
     token: Optional[str] = os.getenv(key="DISCORD_BOT_TOKEN")
     if token is None or token == "" or token.isspace():
         console.print("[ERROR/main]: No or empty token found in environment variables. Please set the 'DISCORD_BOT_TOKEN' variable.")
