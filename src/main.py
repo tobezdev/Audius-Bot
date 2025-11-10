@@ -33,7 +33,7 @@ console = Console(
 
 env_loaded: bool = dotenv.load_dotenv()
 if not env_loaded:
-    console.print("[WARNING/main]: .env file not found or failed to load. Proceeding with existing environment variables set by the system.", style="warning")
+    console.print("[WARNING/main]: .env file not found or failed to load. Proceeding with existing environment variables set by the system.")
 
 # Default intents (everything except from privileged intents) 
 i: discord.Intents = discord.Intents.default() 
@@ -46,10 +46,17 @@ bot: discord.AutoShardedBot = discord.AutoShardedBot(
         969254887621820526, # tobezdev
         251252940004786180, # Michael
         555150451369181185  # SenjienZ
-    ],
+    ],    
     debug_guilds=[
-        557662127305785361, # Audius Community Guild ID
-        871816769982058517  # Audius Community Staff Guild ID
+        #
+        # Uncomment these as added to prevent global command registration.
+        # They are currently commented out to prevent a discord.errors.Forbidden exception
+        # when trying to register commands in guilds it is not allowed to access (because it is not installed there).
+        #
+        # 557662127305785361, # Audius Community Guild ID
+        # 871816769982058517, # Audius Community Staff Guild ID
+        #
+        1416809617488609545 # Toby's Tavern (Testing Guild) ID
     ],
     default_command_contexts={discord.InteractionContextType.guild},
     default_command_integration_types={discord.IntegrationType.guild_install},
@@ -60,13 +67,13 @@ bot: discord.AutoShardedBot = discord.AutoShardedBot(
 @bot.event
 async def on_ready() -> None:
     if not bot.user:
-        console.print("[ERROR/bot]: Bot failed to log in. Closing connection...", style="error")
+        console.print("[ERROR/bot]: Bot failed to log in. Closing connection...")
         await bot.close()
         return
     else:
-        console.print(f"[INFO/bot]: Logged in as {bot.user} (ID: {bot.user.id})", style="info")
+        console.print(f"[INFO/bot]: Logged in as {bot.user} (ID: {bot.user.id})")
         await bot.sync_commands(force=True, method="individual")
-        console.print("[INFO/bot]: Synced commands with the Discord API.", style="info")
+        console.print("[INFO/bot]: Synced commands with the Discord API.")
         return
 
 
@@ -145,7 +152,7 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
     msg += f"\nIf this error persists, please contact `toby@tobezdev.com`; quote error code **`{errcode}`** when reporting this issue."
 
     # Log the error with its code to the console for debugging purposes.
-    console.print(f"[ERROR/command]: [{errcode}] Caught a {error.__class__.__name__} error in command '{ctx.command}'.\n\t\t{error}", style="error")
+    console.print(f"[ERROR/command]: [{errcode}] Caught a {error.__class__.__name__} error in command '{ctx.command}'.\n\t\t{error}")
     await ctx.respond(msg, ephemeral=True)
     return
 
@@ -153,15 +160,15 @@ async def on_application_command_error(ctx: discord.ApplicationContext, error: d
 if __name__ == "__main__":
     token: Optional[str] = os.getenv(key="DISCORD_BOT_TOKEN")
     if token is None or token == "" or token.isspace():
-        console.print("[ERROR/main]: No or empty token found in environment variables. Please set the 'DISCORD_BOT_TOKEN' variable.", style="error")
+        console.print("[ERROR/main]: No or empty token found in environment variables. Please set the 'DISCORD_BOT_TOKEN' variable.")
         exit(code=1)
     for filename in os.listdir(path=COGS_PATH):
         if filename.endswith(".py") and not filename == "__init__.py":
             try:
                 _: list[str] = bot.load_extension(name=f"cogs.{filename[:-3]}")
-                console.print(f"[INFO/bot]: Successfully loaded extension: '{filename}'.", style="info")
+                console.print(f"[INFO/bot]: Successfully loaded extension: '{filename}'.")
             except Exception as e:
-                console.print(f"[ERROR/bot]: Failed to load extension '{filename}': {e}.", style="error")
+                console.print(f"[ERROR/bot]: Failed to load extension '{filename}': {e}.")
     bot.run(token)
 
 else:
