@@ -1,21 +1,20 @@
 import discord
 from discord.ext import commands
 
-import requests
+import requests, re
 
 from typing import Optional
 
 
 AUDIUS_GUILD_ID: int = 871816769982058517
 AUTOMOD_CONFIG: dict[str, bool] = {
+    "block_discord_invites": True,
     "block_unsafelisted_urls": True,
 }
 
-# A simple safelist for URLs. More complex logic can be added later.
-URL_SAFELIST: list[str] = [
-    "audius.co",
-    "tenor.com"
-]
+# AutoMod safelists
+URL_SAFELIST: list[str] = []
+INVITE_SAFELIST: list[str] = []
 
 # Add custom entries to block here.
 PROFANITY_LIST: list[str] = []
@@ -34,6 +33,12 @@ async def scan_message(message: discord.Message) -> tuple[bool, Optional[str]]:
     - the second element provides the reason for the violation if applicable, else None.
     """
     no_violation = (False, None)
+
+    # A simple filter for unsafelisted Discord invite links.
+    if AUTOMOD_CONFIG.get("block_discord_invites", True):
+        matches: Optional[list[str]] = re.findall(pattern=r'(?:https?://)?discord(?:(?:app)?\.com/invite|\.gg)/?[a-zA-Z0-9]+/?', string=message.content)
+        if matches and any(link not in URL_SAFELIST for link in matches):
+            return (True, f"Unsafelisted Discord invite link(s) detected: {', '.join(matches)}")
 
     # Add logic here.
     # In the meantime, return no_violation to prevent every message 
