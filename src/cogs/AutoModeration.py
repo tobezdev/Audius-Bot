@@ -3,13 +3,14 @@ from discord.ext import commands
 
 import requests, re
 
-from typing import Optional
+from typing import Optional, Any
 
 
 AUDIUS_GUILD_ID: int = 871816769982058517
 AUTOMOD_CONFIG: dict[str, bool] = {
     "block_discord_invites": True,
     "block_unsafelisted_urls": True,
+    "block_profanity": True,
 }
 
 # AutoMod safelists
@@ -39,6 +40,39 @@ async def scan_message(message: discord.Message) -> tuple[bool, Optional[str]]:
         matches: Optional[list[str]] = re.findall(pattern=r'(?:https?://)?discord(?:(?:app)?\.com/invite|\.gg)/?[a-zA-Z0-9]+/?', string=message.content)
         if matches and any(link not in URL_SAFELIST for link in matches):
             return (True, f"Unsafelisted Discord invite link(s) detected: {', '.join(matches)}")
+
+    if AUTOMOD_CONFIG.get("block_profanity", True):
+        content_lower: str = message.content.lower()
+        profane_words_found: list[str] = []
+
+        leet_map: dict[int, str] = str.maketrans({
+            '@': 'a', '4': 'a', '3': 'e', '1': 'i', '!': 'i',
+            '0': 'o', '5': 's', '$': 's', '7': 't', '+': 't',
+            '*': '', '-': '', '_': '', '.': '', ',': '', ' ': ''
+        })
+
+        for word in PROFANITY_LIST:
+            if re.search(pattern=rf'\b{re.escape(pattern=word)}\b', string=content_lower):
+                profane_words_found.append(word)
+
+        tokens: list[Any] = re.findall(pattern=r'[a-z0-9@!$*+\-_]+', string=content_lower)
+        normalized_tokens: list[str] = []
+        for t in tokens:
+            nt = t.translate(leet_map)
+            nt: str = re.sub(pattern=r'[^a-z]', repl='', string=nt)
+            nt: str = re.sub(pattern=r'(.)\1+', repl=r'\1', string=nt)
+            if nt:
+                normalized_tokens.append(nt)
+
+        for word in PROFANITY_LIST:
+            if word in profane_words_found:
+                continue
+            if any(word in nt for nt in normalized_tokens):
+                profane_words_found.append(word)
+        
+        if profane_words_found:
+            return (True, f"Profane word(s) detected: {', '.join(profane_words_found)}")
+
 
     # Add logic here.
     # In the meantime, return no_violation to prevent every message 
