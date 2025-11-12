@@ -6,11 +6,13 @@ import requests, re
 from typing import Optional, Any
 
 
-AUDIUS_GUILD_ID: int = 871816769982058517
+AUDIUS_GUILD_ID: int = 557662127305785361
+AUDIUS_STAFF_GUILD_ID: int = 871816769982058517
 AUTOMOD_CONFIG: dict[str, bool] = {
     "block_discord_invites": True,
     "block_unsafelisted_urls": True,
     "block_profanity": True,
+    "block_staff_impersonation": True,
 }
 
 # AutoMod safelists
@@ -25,7 +27,7 @@ for keyword in requests.get(url='https://raw.githubusercontent.com/zautumnz/prof
     PROFANITY_LIST.append(keyword.lower())
 
 
-async def scan_message(message: discord.Message) -> tuple[bool, Optional[str]]:
+async def scan_message_content(message: discord.Message) -> tuple[bool, Optional[str]]:
     """
     Scans messages to detect violations of various custom AutoMod rules.
     
